@@ -65,7 +65,6 @@ impl MeshBuilder for PartialCylinderMeshBuilder {
         let mut positions = Vec::with_capacity(num_vertices as usize);
         let mut uvs = Vec::with_capacity(num_vertices as usize);
         let mut indices = Vec::with_capacity((6 * num_vertices - 9) as usize);
-        let normals = vec![[0f32, 0f32, 1f32]; 2 * num_vertices as usize];
 
         let step_theta = core::f32::consts::TAU / 360 as f32;
         let mut sectors_produced = 0;
@@ -81,18 +80,20 @@ impl MeshBuilder for PartialCylinderMeshBuilder {
             sectors_produced += 1;
         }
 
-        for i in 2..2 * sectors_produced as u32 {
-            indices.extend_from_slice(&[i - 1, i, 0]);
+        for i in 0..sectors_produced as u32 {
+            indices.extend_from_slice(&[0, i, i+1]);
         }
 
-        Mesh::new(
+        let mut result = Mesh::new(
             bevy::render::mesh::PrimitiveTopology::TriangleList,
             RenderAssetUsages::default(),
         )
         .with_inserted_indices(bevy::render::mesh::Indices::U32(indices))
-        .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
+        .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)     
+        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+        
+        result.compute_normals();
+        result
     }
 }
 
